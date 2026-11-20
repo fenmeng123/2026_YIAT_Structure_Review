@@ -1,0 +1,53 @@
+{
+  "author": "Kunru Song",
+  "models": [
+    {
+      "name": "mpnet",
+      "model_id": "sentence-transformers/all-mpnet-base-v2",
+      "revision": "e8c3b32edf5434bc2275fc9bab85f82640a19130",
+      "runs": [
+        {
+          "version": "MAK_YOUNG_2020",
+          "seed": 20261013
+        }
+      ]
+    },
+    {
+      "name": "personality",
+      "model_id": "dwulff/mpnet-personality",
+      "revision": "da377389cdf92ed0e28ffbc608912bcbcd97d162",
+      "runs": [
+        {
+          "version": "MAK_YOUNG_2020",
+          "seed": 20261013
+        },
+        {
+          "version": "ORIGINAL",
+          "seed": 20261013
+        }
+      ]
+    },
+    {
+      "name": "harmony",
+      "model_id": "harmonydata/mental_health_harmonisation_1",
+      "revision": "13115a1ad333e14b2804bb7eba60e91ce6c42c73",
+      "runs": [
+        {
+          "version": "MAK_YOUNG_2020",
+          "seed": 20261013
+        }
+      ]
+    },
+    {
+      "name": "multilingual_mpnet",
+      "model_id": "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
+      "revision": "4328cf26390c98c5e3c738b4460a05b95f4911f5",
+      "runs": [
+        {
+          "version": "CHINESE",
+          "seed": 20261013
+        }
+      ]
+    }
+  ]
+}

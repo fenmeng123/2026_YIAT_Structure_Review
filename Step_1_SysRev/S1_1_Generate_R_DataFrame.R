@@ -128,13 +128,38 @@ retention_aliases <- c('pa'='parallel analysis','parallel analysis'='parallel an
   'model comparison'='model comparison','model modification'='model modification',
   'modification indices'='modification indices','fixed maximum three factors'='fixed maximum three factors',
   'parameter estimates'='parameter estimates','inter-factor correlations'='inter-factor correlations')
-records <- list()
+source_sheets <- list()
 for (sheet in names(schema)) {
-  dat <- read_excel(file.path(input_dir,
+  source_sheets[[sheet]] <- read_excel(file.path(input_dir,
     'Coding_Results_Harmonized_Prepared_for_analysis_Double-Checked.xlsx'),
     sheet=sheet, col_types='text', na=character(), trim_ws=FALSE, .name_repair='minimal') %>%
     select(-matches('(^|[^a-z])notes?($|[^a-z])', ignore.case=TRUE)) %>% as.data.frame()
-  names(dat)[names(dat)=='_geographic_region'] <- 'geographic_region'
+}
+
+# The checked export labels the study factor count k and omits the optional model notes.
+names(source_sheets$Data)[names(source_sheets$Data)=='k'] <- 'number_of_factors'
+names(source_sheets$Stages)[names(source_sheets$Stages)=='_geographic_region'] <- 'geographic_region'
+if (!'model_scope' %in% names(source_sheets$Stages)) {
+  source_sheets$Stages <- source_sheets$Stages %>% mutate(model_scope=NA_character_, .after=model_type)
+}
+
+# The public Data sheet omits its hidden region column. Recover it from the stage geography.
+if (!'geographic_region' %in% names(source_sheets$Data)) {
+  stage_regions <- source_sheets$Stages %>%
+    transmute(nation=str_to_lower(str_squish(nation_region)), region=str_squish(geographic_region)) %>%
+    filter(!is.na(nation), nation!='', !is.na(region), region!='') %>% distinct()
+  study_nations <- source_sheets$Data$nation_region %>% str_squish() %>% str_to_lower()
+  needed_regions <- stage_regions %>% filter(nation %in% study_nations)
+  if (anyDuplicated(needed_regions$nation) || !all(study_nations %in% needed_regions$nation)) {
+    stop('Stages must provide one geographic region for each study national region.')
+  }
+  source_sheets$Data <- source_sheets$Data %>%
+    mutate(geographic_region=needed_regions$region[match(study_nations, needed_regions$nation)], .after=continent)
+}
+
+records <- list()
+for (sheet in names(schema)) {
+  dat <- source_sheets[[sheet]]
   names(dat) <- make.names(names(dat))
   if (!identical(names(dat), names(schema[[sheet]]))) stop('Workbook columns changed: ', sheet)
   for (field in names(dat)) {
